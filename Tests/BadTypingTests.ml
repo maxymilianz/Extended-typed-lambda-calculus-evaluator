@@ -234,6 +234,32 @@ module BadTypingTests = struct
         ) in
         assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
                                       ~expected:(None, None)
+
+    let test_same_exception_name () =
+        let expression = Exception (
+            "exception",
+            BoolType,
+            Try (
+                Exception (
+                    "exception",
+                    BoolType,
+                    Application (
+                        Abstraction (
+                            ("argument", BoolType),
+                            Throw (
+                                "exception",
+                                True,
+                                BoolType
+                            )
+                        ),
+                        False
+                    )
+                ),
+                [("exception", "parameter", True)]
+            )
+        ) in
+        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
+                                      ~expected:(Some BoolType, None)
 end
 
 
@@ -397,6 +423,10 @@ let () = run_tests {
                 {
                     case_name = "Bad exception type";
                     test_function = BadTypingTests.test_bad_exception_type
+                };
+                {
+                    case_name = "Same exception name";
+                    test_function = BadTypingTests.test_same_exception_name
                 };
             ]
         };
