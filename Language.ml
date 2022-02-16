@@ -86,3 +86,13 @@ let maybe_expression_to_string maybe_expression =
     match maybe_expression with
     | None -> "None"
     | Some expression -> expression_to_string expression
+
+
+let assert_equal_expressions ~actual ~expected =
+    if actual = expected then
+        ()
+    else
+        failwith ("Got:\n" ^
+                  (expression_to_string actual) ^ "\n" ^
+                  "Expected:\n" ^
+                  (expression_to_string expected) ^ "\n")

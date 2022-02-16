@@ -1,6 +1,6 @@
 open Language
-open Main
 open TestUtilities
+open Typechecker
 open Types
 
 
@@ -38,132 +38,100 @@ module BadTypingTests = struct
                 "arithexc", "foo", Natural 69
             ]
         ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
 
     let test_undefined_variable () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Variable "undefined"))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Variable "undefined"))
 
     let test_undefined_variable_in_body () =
         let abstraction = Abstraction (("parameter", BoolType), Variable "undefined") in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate abstraction)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type abstraction)
 
     let test_bad_argument_type () =
         let application = Application (Abstraction (("parameter", BoolType), Variable "parameter"),
                                        Natural 2137) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate application)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type application)
 
     let test_application_of_natural () =
         let application = Application (Natural 69, Natural 14) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate application)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type application)
 
 
     let test_addition_of_bool_and_natural () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Add (True, Natural 88)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Add (True, Natural 88)))
 
     let test_addition_of_bools () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Add (True, False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Add (True, False)))
 
     let test_addition_of_natural_and_bool () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Add (Natural 88, False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Add (Natural 88, False)))
 
     let test_multiplication_of_bools () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Multiply (True, False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Multiply (True, False)))
 
     let test_subtraction_of_bools () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Subtract (True, False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Subtract (True, False)))
 
     let test_division_of_bools () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Divide (True, False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Divide (True, False)))
 
     let test_equality_of_bools () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Equal (True, False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Equal (True, False)))
 
 
     let test_natural_condition () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (If (Natural 14, Natural 19,
-                                                                            Natural 97)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (If (Natural 14, Natural 19, Natural 97)))
 
     let test_different_type_branches () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (If (True, Natural 88,
-                                                                            False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (If (True, Natural 88, False)))
 
     let test_undefined_variable_in_condition () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (If (Variable "undefined",
-                                                                            True, False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (If (Variable "undefined", True, False)))
 
     let test_undefined_variable_in_then () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (If (True,
-                                                                            Variable "undefined",
-                                                                            False)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (If (True, Variable "undefined", False)))
 
 
     let test_undefined_variable_in_fix () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Fix (Variable "undefined")))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Fix (Variable "undefined")))
 
     let test_bool_in_fix () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Fix (True)))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Fix (True)))
 
 
     let test_undefined_variable_after_exception () =
         let expression = Exception ("exception", BoolType, Variable "undefined") in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_throwing_undefined_exception () =
         let throw = Throw ("undefined", True, BoolType) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate throw)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type throw)
 
     let test_throwing_undefined_exception_with_undefined_variable () =
         let throw = Throw ("exception", Variable "variable", BoolType) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate throw)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type throw)
 
     let test_undefined_variable_in_try () =
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate (Try (Variable "undefined",
-                                                                             [])))
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type (Try (Variable "undefined", [])))
 
     let test_undefined_exception_handler () =
         let try_expression = Try (True, [("undefined", "parameter", False)]) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate try_expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type try_expression)
 
     let test_undefined_exception_handler_for_undefined_variable () =
         let try_expression = Try (Variable "variable", [("exception", "parameter", True)]) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate try_expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type try_expression)
 
     let test_bad_exception_argument_type () =
         let expression =
             Exception ("exception", BoolType, Throw ("exception", Natural 21, BoolType)) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_undefined_variable_as_exception_argument () =
         let expression =
             Exception ("exception", BoolType, Throw ("exception", Variable "undefined", BoolType)) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_undefined_variable_in_nonempty_try () =
         let expression = Exception (
@@ -171,8 +139,7 @@ module BadTypingTests = struct
             BoolType,
             Try (Variable "undefined", [("exception", "parameter", True)])
         ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_undefined_variable_in_handler () =
         let expression = Exception (
@@ -180,8 +147,7 @@ module BadTypingTests = struct
             BoolType,
             Try (True, [("exception", "parameter", Variable "undefined")])
         ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_different_type_handlers () =
         let expression = Exception (
@@ -196,8 +162,7 @@ module BadTypingTests = struct
                 )
             )
         ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_bad_catched_exception_argument_type () =
         let expression = Exception (
@@ -208,8 +173,7 @@ module BadTypingTests = struct
                 [("exception", "parameter", Add (Variable "parameter", Natural 14))]
             )
         ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_different_type_exception_and_handler () =
         let expression = Exception (
@@ -220,8 +184,7 @@ module BadTypingTests = struct
                 [("exception", "parameter", True)]
             )
         ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
+        assert_type_is_none (check_type expression)
 
     let test_bad_exception_type () =
         let expression = Exception (
@@ -232,34 +195,7 @@ module BadTypingTests = struct
                 Throw ("exception", True, BoolType)
             )
         ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(None, None)
-
-    let test_same_exception_name () =
-        let expression = Exception (
-            "exception",
-            BoolType,
-            Try (
-                Exception (
-                    "exception",
-                    BoolType,
-                    Application (
-                        Abstraction (
-                            ("argument", BoolType),
-                            Throw (
-                                "exception",
-                                True,
-                                BoolType
-                            )
-                        ),
-                        False
-                    )
-                ),
-                [("exception", "parameter", True)]
-            )
-        ) in
-        assert_equal_types_and_values ~actual:(check_type_and_evaluate expression)
-                                      ~expected:(Some BoolType, None)
+        assert_type_is_none (check_type expression)
 end
 
 
@@ -423,10 +359,6 @@ let () = run_tests {
                 {
                     case_name = "Bad exception type";
                     test_function = BadTypingTests.test_bad_exception_type
-                };
-                {
-                    case_name = "Same exception name";
-                    test_function = BadTypingTests.test_same_exception_name
                 };
             ]
         };

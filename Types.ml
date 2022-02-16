@@ -4,12 +4,13 @@ type type_type =
     | AbstractionType of (type_type * type_type)
 
 
-let maybe_type_to_string maybe_type =
-    let rec aux = function
-        | BoolType -> "Bool"
-        | NaturalType -> "Natural"
-        | AbstractionType (parameter_type, body_type) ->
-            "(" ^ (aux parameter_type) ^ ") -> " ^ (aux body_type) in
-    match maybe_type with
+let rec type_to_string = function
+    | BoolType -> "Bool"
+    | NaturalType -> "Natural"
+    | AbstractionType (parameter_type, body_type) ->
+        "(" ^ (type_to_string parameter_type) ^ ") -> " ^ (type_to_string body_type)
+
+
+let maybe_type_to_string = function
     | None -> "None"
-    | Some type_value -> aux type_value
+    | Some type_value -> type_to_string type_value

@@ -1,0 +1,7 @@
+(exception e of nat in
+try
+    ((function x : nat ->
+        function y : nat ->
+             / x y) 0) 2
+catch
+    e argument -> (2137))

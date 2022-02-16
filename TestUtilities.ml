@@ -1,3 +1,5 @@
+open Evaluator
+open FileUtilities
 open Language
 open Types
 
@@ -31,19 +33,50 @@ let process_chunk chunk = chunk.chunk_name, (List.map process_case chunk.test_ca
 let run_tests suite = run suite.suite_name (List.map process_chunk suite.chunks)
 
 
-let assert_equal_types_and_values ~actual ~expected =
+let assert_type_is_none = function
+    | None -> ()
+    | Some type_value ->
+        failwith ("Expected None, got value:\n" ^
+                  (type_to_string type_value) ^ "\n")
+
+
+let assert_equal_expressions ~actual ~expected =
     if actual = expected then
         ()
     else
-        let actual_maybe_type, actual_maybe_value = actual
-        and expected_maybe_type, expected_maybe_value = expected in
-        if actual_maybe_type = expected_maybe_type then
-            failwith ("Got value:\n" ^
-                     (maybe_expression_to_string actual_maybe_value) ^ "\n" ^
-                     "Expected value:\n" ^
-                     (maybe_expression_to_string expected_maybe_value) ^ "\n")
-        else  (* actual_maybe_type <> expected_maybe_type *)
-            failwith ("Got type:\n" ^
-                     (maybe_type_to_string actual_maybe_type) ^ "\n" ^
-                     "Expected type:\n" ^
-                     (maybe_type_to_string expected_maybe_type) ^ "\n")
+        failwith ("Got value:\n" ^
+                  (expression_to_string actual) ^ "\n" ^
+                  "Expected value:\n" ^
+                  (expression_to_string expected) ^ "\n")
+
+
+let assert_exception_scope_exit expression exception_name =
+    try
+        evaluate expression; ()
+    with
+        ExceptionScopeExit argument as actual_exception ->
+            if argument = exception_name then
+                ()
+            else
+                raise actual_exception
+
+
+let assert_main_output expression_string expected_output =
+    let input_filename = "test.in"
+    and output_filename = "test.out" in
+    write_to_file expression_string input_filename;
+    Sys.command ("./Main.byte " ^ input_filename ^ " " ^ output_filename);
+    let output = file_to_string output_filename in
+    if output = expected_output then
+        ()
+    else
+        failwith ("Main got input:\n" ^
+                  expression_string ^ "\n" ^
+                  "and produced output:\n" ^
+                  output ^ "\n" ^
+                  "instead of:\n" ^
+                  expected_output ^ "\n")
+
+
+let assert_main_fails expression_string =
+    assert_main_output expression_string "None, None"

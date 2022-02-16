@@ -19,6 +19,8 @@ let create_boolean = function
 
 exception GenericException of string * expression  (* for evaluated language exceptions *)
 
+exception ExceptionScopeExit of string  (* exception trying to exit its scope *)
+
 
 let rec find_handler desired_exception_name = function
     | [] -> None
@@ -183,8 +185,15 @@ let evaluate expression =
                 aux variable_to_value (Application (fix_expression, evaluated_expression))
              | _ -> failwith ("Not a proper abstraction: " ^ (expression_to_string expression)))
 
-        | Exception (_, _, target_expression) ->
-            aux variable_to_value target_expression
+        | Exception (exception_name, _, target_expression) ->
+            (try
+                aux variable_to_value target_expression
+             with
+                GenericException (actual_exception_name, _) as generic_exception ->
+                    if exception_name = actual_exception_name then
+                        raise (ExceptionScopeExit exception_name)
+                    else
+                        raise generic_exception)
         | Throw (exception_name, argument_expression, _) ->
             let evaluated_argument = aux variable_to_value argument_expression in
             raise (GenericException (exception_name, evaluated_argument))
